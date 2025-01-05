@@ -15,7 +15,7 @@
     {% if injuries %}
       <ul>
       {% for item in injuries %}
-        <li>{{ item.injury_name }} - {{ item.sport }}</li>
+        <li>{{ item.title }} - {{ sport_name }}</li>
       {% endfor %}
       </ul>
     {% else %}

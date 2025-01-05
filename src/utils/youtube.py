@@ -1,7 +1,7 @@
 import os
 import requests
 
-API_KEY =  os.environ.get('YOUTUBE_API_KEY')  # 실제로는 os.environ.get('YOUTUBE_API_KEY') 등
+API_KEY =  os.environ.get('YOUTUBE_API_KEY2')  # 실제로는 os.environ.get('YOUTUBE_API_KEY') 등
 url = 'https://www.googleapis.com/youtube/v3/search'
 print("api key ", API_KEY)
 

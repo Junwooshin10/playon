@@ -44,7 +44,8 @@ def main_dashboard():
 
     # (4) 새로운 데이터 알림 (예시로 YouTube 최신 영상 5개)
     # 실제론 부상 사례 DB로부터 '최신 등록 순' 불러올 수도 있음
-    new_injuries = process_random_queries(queries=default_queries, max_results=5)
+    queries = list(default_queries.values())
+    new_injuries = process_random_queries(queries=queries, max_results=5)
     # (5) 구글 시트에서 불상종류/데이터를 가져와서 필요 시 가공
     sheet_injury_data = fetch_injury_types_from_sheet()
 
@@ -67,7 +68,6 @@ def search_injuries():
     - 결과 페이지 렌더링
     """
     query = request.args.get('q', '').strip()
-    print("query", query)
 
     if not query:
         return render_template('search_result.html', query="", results=[])
@@ -85,12 +85,14 @@ def search_injuries():
 
 @app.route('/category/<sport_name>')
 def show_sport_category(sport_name):
-    """
-    카테고리(스포츠)별 페이지
-    - sport_name에 해당하는 부상 정보 표시 (구글 시트 or DB)
-    """
-    records = fetch_injury_types_from_sheet()
-    injuries = [r for r in records if r.get('스포츠') == sport_name]
+    # 1) 스포츠에 해당하는 쿼리 리스트를 생성
+    # 2) 쿼리 리스트를 가지고 youtube에 검색
+    # 3) 검색 결과를 보여주기
+    # records = fetch_injury_types_from_sheet()
+    # print(records)
+    # injuries = [r for r in records if r.get('스포츠') == sport_name]
+
+    injuries = process_random_queries(default_queries[sport_name], 5)
 
     return render_template(
         'category.html',
