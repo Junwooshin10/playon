@@ -1,12 +1,13 @@
 #######################
 # app.py
 #######################
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from pandas import DataFrame
 import plotly.express as px
+from flask_pymongo import PyMongo
 from dotenv import load_dotenv
-load_dotenv()
 
+load_dotenv()
 from utils.sheets import *
 from utils.youtube import *
 from utils.helps import *
@@ -14,8 +15,9 @@ from utils.helps import *
 
 app = Flask(__name__)
 default_queries = generate_and_search_queries()
-print(default_queries)
-# generate_and_search_queries()
+app.config["MONGO_URI"] = os.getenv("MONGO_URI")
+mongo = PyMongo(app)
+
 #-----------------------------------
 # 3) Flask 라우트
 #-----------------------------------
@@ -29,35 +31,46 @@ def main_dashboard():
     - YouTube API 결과(필요 시)
     - Google Sheets 결과(필요 시)
     """
+    mongo.db.command("ping")
+    print("MongoDB Atlas 연결 성공")
     # (1) 스포츠 카테고리
     sports_categories = fetch_sports_types_from_sheet()
-    
-    # (2) 인기 부상 사례
-    popular_injuries = [
-        {"title": "전방 십자인대 파열(ACL)", "desc": "무릎에 흔히 발생하는 심각한 부상"},
-        {"title": "발목 염좌", "desc": "점프 착지 시 자주 발생"},
-        {"title": "어깨 회전근개 파열", "desc": "과도한 스윙 동작에서 자주 발생"}
-    ]
 
-    # (3) 오늘의 팁 (1개만 노출 예시)
-    tip_of_the_day = "운동 전후에 충분한 워밍업과 쿨다운을 하세요."
-
-    # (4) 새로운 데이터 알림 (예시로 YouTube 최신 영상 5개)
+    # (2) 새로운 데이터 알림 (예시로 YouTube 최신 영상 5개)
     # 실제론 부상 사례 DB로부터 '최신 등록 순' 불러올 수도 있음
-    queries = list(default_queries.values())
-    new_injuries = process_random_queries(queries=queries, max_results=5)
-    # (5) 구글 시트에서 불상종류/데이터를 가져와서 필요 시 가공
+    # queries = list(default_queries.values())
+    new_injuries = []
+    for sport, queries in default_queries.items():
+        result = process_random_queries(queries=queries, max_results=5)
+        new_injuries.extend(result)
+    # # (3) 구글 시트에서 불상종류/데이터를 가져와서 필요 시 가공
     sheet_injury_data = fetch_injury_types_from_sheet()
 
     return render_template(
         'index.html',
         sports_categories=sports_categories,
-        popular_injuries=popular_injuries,
-        tip_of_the_day=tip_of_the_day,
         new_injuries=new_injuries,
         sheet_injury_data=sheet_injury_data
     )
 
+@app.route('/save', methods=['POST'])
+def save_results():
+    """YouTube 검색 결과를 MongoDB에 여러 개 저장 및 업데이트"""
+    data = request.json  # 요청에서 JSON 데이터를 가져옴
+    if not data or not isinstance(data, list):
+        return jsonify({"error": "Invalid data format. Provide a list of items"}), 400
+
+    try:
+        for video in data:
+            # `video_id`를 기준으로 업데이트 또는 삽입
+            mongo.db.youtube_results.update_many(
+                {'video_id': video['video_id']},  # 업데이트 조건
+                {'$set': video},  # 업데이트할 데이터
+                upsert=True  # 없으면 새로 삽입
+            )
+        return jsonify({"message": f"{len(data)} items processed successfully"}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/search', methods=['GET'])
 def search_injuries():

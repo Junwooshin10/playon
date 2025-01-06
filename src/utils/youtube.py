@@ -1,9 +1,8 @@
 import os
 import requests
 
-API_KEY =  os.environ.get('YOUTUBE_API_KEY2')  # 실제로는 os.environ.get('YOUTUBE_API_KEY') 등
+API_KEY =  os.environ.get('YOUTUBE_API_KEY')  # 실제로는 os.environ.get('YOUTUBE_API_KEY') 등
 url = 'https://www.googleapis.com/youtube/v3/search'
-print("api key ", API_KEY)
 
 #-----------------------------------
 # YouTube API로 데이터 가져오기 
@@ -18,10 +17,12 @@ def fetch_youtube_data(query="스포츠 부상", max_results=1):
         'q': query,
         'type': 'video',
         'maxResults': max_results,
+        'order': 'rating',
         'key': API_KEY
     }
     response = requests.get(url, params=params)
     data = response.json()
+    print('result', data)
 
     video_list = []
     items = data.get("items", [])

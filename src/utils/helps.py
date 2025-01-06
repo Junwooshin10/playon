@@ -2,16 +2,24 @@ import pandas as pd
 import random
 from utils.sheets import *
 from utils.youtube import *
+from app import mongo
 
 def process_random_queries(queries, max_results):
-    """ 여러 개의 쿼리 중 무작위로 선택된 일부 쿼리를 처리합니다. """
-    # 무작위로 num_samples개의 쿼리 선택
+    """ 여러 개의 쿼리 중 무작위로 선택된 일부 쿼리를 처리 후 MongoDB에 저장 """
     random_queries = random.sample(queries, min(max_results, len(queries)))
     all_results = []
+
     for query in random_queries:
-        # print(f"Searching for: {query}")
-        results = fetch_youtube_data(query)
-        all_results.extend(results)  # 결과를 하나의 리스트에 추가
+        results = fetch_youtube_data(query, 2)  # YouTube API 호출
+        all_results.extend(results)  # 결과를 리스트에 추가
+        
+        # MongoDB에 저장 또는 업데이트
+        for video in results:
+            mongo.db.youtube_results.update_one(
+                {'video_id': video['video_id']},  # 중복 확인 기준
+                {'$set': video},  # 데이터 업데이트
+                upsert=True  # 없으면 삽입
+            )
     return all_results
 
 # 데이터 조합 및 YouTube 검색 실행
@@ -30,6 +38,4 @@ def generate_and_search_queries():
                 query = f"{body_part_row['부위']}+{injury_row['부상종류']}+{sport_row['name']}+{injury_row['설명']}"
                 queries.append(query)
         sports_queries[sport_row['name']]=queries
-        
-
     return sports_queries
