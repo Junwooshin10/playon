@@ -14,7 +14,7 @@ from utils.helps import *
 
 app = Flask(__name__)
 default_queries = generate_and_search_queries()
-
+print(default_queries)
 # generate_and_search_queries()
 #-----------------------------------
 # 3) Flask 라우트
@@ -85,10 +85,9 @@ def search_injuries():
 
 @app.route('/category/<sport_name>')
 def show_sport_category(sport_name):
-    """
-    카테고리(스포츠)별 페이지
-    - sport_name에 해당하는 부상 정보 표시 (구글 시트 or DB)
-    """
+    # 1) 스포츠에 해당하는 쿼리 리스트를 생성
+    # 2) 쿼리 리스트를 가지고 youtube에 검색
+    # 3) 검색 결과를 보여주기
     records = fetch_injury_types_from_sheet()
     injuries = [r for r in records if r.get('스포츠') == sport_name]
 

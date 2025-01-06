@@ -9,7 +9,7 @@ def process_random_queries(queries, max_results):
     random_queries = random.sample(queries, min(max_results, len(queries)))
     all_results = []
     for query in random_queries:
-        print(f"Searching for: {query}")
+        # print(f"Searching for: {query}")
         results = fetch_youtube_data(query)
         all_results.extend(results)  # 결과를 하나의 리스트에 추가
     return all_results
@@ -22,10 +22,10 @@ def generate_and_search_queries():
     body_parts_df = fetch_sheet_data('부상부위')  # '부상부위' 워크시트
 
     # 검색 쿼리 생성
-    queries = []
+    queries = [] # key: value
     for _, injury_row in injury_df.iterrows():
         for _, sport_row in sports_df.iterrows():
             for _, body_part_row in body_parts_df.iterrows():
-                query = f"{body_part_row['부위']} {injury_row['부상종류']} {sport_row['name']} {injury_row['설명']}"
+                query = f"{body_part_row['부위']}+{injury_row['부상종류']}+{sport_row['name']}+{injury_row['설명']}"
                 queries.append(query)
     return queries

@@ -29,6 +29,7 @@ def fetch_youtube_data(query="스포츠 부상", max_results=1):
         snippet = item["snippet"]
         video_id = item["id"]["videoId"]
         video_info = {
+            "keyword": query,
             "title": snippet["title"],
             "video_id": video_id,
             "video_url": f"https://www.youtube.com/watch?v={video_id}",
