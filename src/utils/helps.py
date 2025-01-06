@@ -21,11 +21,15 @@ def generate_and_search_queries():
     sports_df = fetch_sheet_data('운동종류')  # '운동종류' 워크시트
     body_parts_df = fetch_sheet_data('부상부위')  # '부상부위' 워크시트
 
+    sports_queries = {}
     # 검색 쿼리 생성
-    queries = [] # key: value
-    for _, injury_row in injury_df.iterrows():
-        for _, sport_row in sports_df.iterrows():
+    for _, sport_row in sports_df.iterrows():
+        queries = []
+        for _, injury_row in injury_df.iterrows():
             for _, body_part_row in body_parts_df.iterrows():
                 query = f"{body_part_row['부위']}+{injury_row['부상종류']}+{sport_row['name']}+{injury_row['설명']}"
                 queries.append(query)
-    return queries
+        sports_queries[sport_row['name']]=queries
+        
+
+    return sports_queries
