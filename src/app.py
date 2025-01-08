@@ -1,22 +1,17 @@
 #######################
 # app.py
 #######################
-from flask import Flask, render_template, request, jsonify
-from pandas import DataFrame
-import plotly.express as px
-from flask_pymongo import PyMongo
+from flask import render_template, request
+from services.sheets_service import *
+from services.youtube_service import *
+from services.queries_service import *
+from ops.factory import create_app, mongo
 from dotenv import load_dotenv
 
 load_dotenv()
-from utils.sheets import *
-from utils.youtube import *
-from utils.helps import *
 
-
-app = Flask(__name__)
+app = create_app()
 default_queries = generate_and_search_queries()
-app.config["MONGO_URI"] = os.getenv("MONGO_URI")
-mongo = PyMongo(app)
 
 #-----------------------------------
 # 3) Flask 라우트
@@ -24,12 +19,7 @@ mongo = PyMongo(app)
 @app.route('/')
 def main_dashboard():
     """
-    메인 대시보드:
-    - 카테고리(스포츠) 목록
-    - 검색창
-    - 요약 카드(새로운 데이터, 오늘의 팁, 인기 부상 사례)
-    - YouTube API 결과(필요 시)
-    - Google Sheets 결과(필요 시)
+    메인 대시보드
     """
     mongo.db.command("ping")
     print("MongoDB Atlas 연결 성공")
@@ -37,13 +27,8 @@ def main_dashboard():
     sports_categories = fetch_sports_types_from_sheet()
 
     # (2) 새로운 데이터 알림 (예시로 YouTube 최신 영상 5개)
-    # 실제론 부상 사례 DB로부터 '최신 등록 순' 불러올 수도 있음
-    # queries = list(default_queries.values())
-    new_injuries = []
-    for sport, queries in default_queries.items():
-        result = process_random_queries(queries=queries, max_results=5)
-        new_injuries.extend(result)
-    # # (3) 구글 시트에서 불상종류/데이터를 가져와서 필요 시 가공
+    new_injuries = get_latest_query_results(num=8)
+    # (3) 구글 시트에서 부상종류/데이터를 가져와서 필요 시 가공
     sheet_injury_data = fetch_injury_types_from_sheet()
 
     return render_template(
@@ -54,23 +39,11 @@ def main_dashboard():
     )
 
 @app.route('/save', methods=['POST'])
-def save_results():
-    """YouTube 검색 결과를 MongoDB에 여러 개 저장 및 업데이트"""
-    data = request.json  # 요청에서 JSON 데이터를 가져옴
-    if not data or not isinstance(data, list):
-        return jsonify({"error": "Invalid data format. Provide a list of items"}), 400
-
-    try:
-        for video in data:
-            # `video_id`를 기준으로 업데이트 또는 삽입
-            mongo.db.youtube_results.update_many(
-                {'video_id': video['video_id']},  # 업데이트 조건
-                {'$set': video},  # 업데이트할 데이터
-                upsert=True  # 없으면 새로 삽입
-            )
-        return jsonify({"message": f"{len(data)} items processed successfully"}), 201
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+def save_queries():
+    # 각 스포츠별 데이터 처리 및 저장
+    for sport, queries in default_queries.items():
+        process_random_queries(sport, queries, max_results=5)  # 저장 로직 호출
+    return "Data saved successfully"
 
 @app.route('/search', methods=['GET'])
 def search_injuries():

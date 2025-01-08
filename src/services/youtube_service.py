@@ -7,7 +7,7 @@ url = 'https://www.googleapis.com/youtube/v3/search'
 #-----------------------------------
 # YouTube API로 데이터 가져오기 
 #-----------------------------------
-def fetch_youtube_data(query="스포츠 부상", max_results=1):
+def fetch_youtube_data(category, query="스포츠 부상", max_results=10):
     """
     YouTube Data API를 통해 'query' 검색 결과를 가져옵니다.
     반환: 동영상 정보 리스트 (title, videoId, channelTitle 등)
@@ -30,6 +30,7 @@ def fetch_youtube_data(query="스포츠 부상", max_results=1):
         snippet = item["snippet"]
         video_id = item["id"]["videoId"]
         video_info = {
+            "category": category,
             "keyword": query,
             "title": snippet["title"],
             "video_id": video_id,
