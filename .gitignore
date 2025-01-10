@@ -7,7 +7,7 @@ __pycache__/
 .DS_Store
 # C extensions
 *.so
-
+src/templates/index2.html
 # Distribution / packaging
 .Python
 build/
