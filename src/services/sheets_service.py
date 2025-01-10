@@ -1,7 +1,7 @@
 import gspread
 import pandas as pd
 
-SERVICE_ACCOUNT_FILE = 'src/service-account.json'
+SERVICE_ACCOUNT_FILE = 'service-account.json'
 SHEET_NAME = 'Search_Result'
 gc = gspread.service_account(filename=SERVICE_ACCOUNT_FILE)
 

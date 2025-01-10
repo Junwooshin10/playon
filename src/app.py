@@ -31,8 +31,16 @@ def main_dashboard():
     # (3) 구글 시트에서 부상종류/데이터를 가져와서 필요 시 가공
     sheet_injury_data = fetch_injury_types_from_sheet()
 
+    df = etl()
+    df_exploded_inj = df.explode('all_injuries').dropna(subset=['all_injuries'])
+    injury_counts_series = df_exploded_inj['all_injuries'].value_counts()
+    injuryChartData = injury_counts_series.reset_index().to_dict(orient='records')
+    print(injuryChartData)
+    sportInjuryList = []
     return render_template(
         'index.html',
+        injuryChartData=injuryChartData,
+        sportInjuryList=sportInjuryList,
         sports_categories=sports_categories,
         new_injuries=new_injuries,
         sheet_injury_data=sheet_injury_data
