@@ -15,17 +15,11 @@
 ## 기술 스택
 
 ### 백엔드
-- **Python**: 주요 프로그래밍 언어
-- **Flask**: Python 기반의 경량 웹 프레임워크
-- **Flask-PyMongo**: Flask와 MongoDB 연결을 위한 라이브러리
+- 백엔드: Flask
+- 데이터 처리: Pandas
+- 외부 API: Google Sheets, YouTube Data API
+- 배포 환경: GCP App Engine
 
-### 데이터베이스
-- **MongoDB Atlas**: 클라우드 기반의 NoSQL 데이터베이스 서비스
-
-### 기타 도구
-- **YouTube Data API**: YouTube 영상의 메타데이터 수집
-- **pandas**: 데이터 전처리 및 분석을 위한 Python 라이브러리
-- **Chart.js**: 데이터 시각화를 위한 JavaScript 라이브러리
 
 ## 설치 및 실행 방법
 

@@ -1,8 +1,8 @@
 from bson import ObjectId
-from ops.factory import mongo
+from src.ops.factory import mongo
 import pandas as pd
 import re
-from services.sheets_service import *
+from src.services.sheets_service import *
 
 def update_query_results(key:dict, update_data):
     """문서 업데이트"""

@@ -72,9 +72,6 @@
 
 <!-- 차트 데이터 -->
 <script>
-
-  console.log('{{ injuryChartData|tojson|default([])|safe }}');
-
   const injuryData = JSON.parse('{{ injuryChartData|tojson|default([])|safe }}') || [];
   const ctx = document.getElementById('injuryChart');
 

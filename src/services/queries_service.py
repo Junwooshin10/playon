@@ -1,9 +1,9 @@
 import pandas as pd
 import random
-from services.sheets_service import *
-from services.youtube_service import *
-from ops.factory import mongo
-from ops.db_ops import *
+from src.services.sheets_service import *
+from src.services.youtube_service import *
+from src.ops.factory import mongo
+from src.ops.etl import *
 
 
 def process_random_queries(category, queries, max_results):

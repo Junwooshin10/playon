@@ -2,10 +2,10 @@
 # app.py
 #######################
 from flask import render_template, request
-from services.sheets_service import *
-from services.youtube_service import *
-from services.queries_service import *
-from ops.factory import create_app, mongo
+from src.services.sheets_service import *
+from src.services.youtube_service import *
+from src.services.queries_service import *
+from src.ops.factory import create_app, mongo
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -30,13 +30,28 @@ def main_dashboard():
     new_injuries = get_latest_query_results(num=8)
     # (3) 구글 시트에서 부상종류/데이터를 가져와서 필요 시 가공
     sheet_injury_data = fetch_injury_types_from_sheet()
-
     df = etl()
     df_exploded_inj = df.explode('all_injuries').dropna(subset=['all_injuries'])
     injury_counts_series = df_exploded_inj['all_injuries'].value_counts()
     injuryChartData = injury_counts_series.reset_index().to_dict(orient='records')
-    print(injuryChartData)
-    sportInjuryList = []
+
+    df_exploded_sports = df.explode('all_sports').dropna(subset=['all_sports'])
+    # 스포츠와 부상 데이터 병합
+    df_exploded = pd.merge(
+        df_exploded_sports[['all_sports', '_id']], 
+        df_exploded_inj[['all_injuries', '_id']],
+        on='_id'
+    )
+    # 그룹화하여 빈도 계산
+    sport_injury_counts = df_exploded.groupby(['all_sports', 'all_injuries']).size().reset_index(name='count')
+    # 빈도수 기준으로 정렬하여 상위 5개 선택
+    top_sport_injury_counts = sport_injury_counts.sort_values(by='count', ascending=False).head(8)
+    # 원하는 형태로 데이터 변환
+    sportInjuryList = top_sport_injury_counts.rename(columns={
+        'all_sports': 'sport', 
+        'all_injuries': 'injury'
+    }).to_dict(orient='records')
+
     return render_template(
         'index.html',
         injuryChartData=injuryChartData,
