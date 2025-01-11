@@ -28,6 +28,8 @@ def main_dashboard():
 
     # (2) 새로운 데이터 알림 (예시로 YouTube 최신 영상 5개)
     new_injuries = get_latest_query_results(num=8)
+
+    
     # (3) 구글 시트에서 부상종류/데이터를 가져와서 필요 시 가공
     sheet_injury_data = fetch_injury_types_from_sheet()
     df = etl()
@@ -61,7 +63,7 @@ def main_dashboard():
         sheet_injury_data=sheet_injury_data
     )
 
-@app.route('/save', methods=['POST'])
+@app.route('/save', methods=['POST']) 
 def save_queries():
     # 각 스포츠별 데이터 처리 및 저장
     for sport, queries in default_queries.items():
@@ -101,8 +103,8 @@ def show_sport_category(sport_name):
     # print(records)
     # injuries = [r for r in records if r.get('스포츠') == sport_name]
 
-    injuries = process_random_queries(default_queries[sport_name], 5)
-
+    injuries = get_document_by_sport(sport_name, 5)
+    print(injuries)
     return render_template(
         'category.html',
         sport_name=sport_name,

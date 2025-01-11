@@ -5,29 +5,36 @@ import re
 from src.services.sheets_service import *
 
 def update_query_results(key:dict, update_data):
-    """문서 업데이트"""
-    result = mongo.db.query_results.update_one(
+    """문서 업데이트""" 
+    result = mongo.db.query_results.update_one( 
        key,
         {"$set": update_data},
-        upsert=True  # 없으면 삽입
+        upsert=True  # 없으면 삽입 update + insert
     )
     return result.modified_count
 
+# 카테고리(sports) 기준으로 문서 조회
+def get_document_by_sport(sport, num=8):
+    """문서 조회"""
+    return mongo.db.query_results.find({"category": sport}).limit(num)
+
+# Id 기준으로 문서 조회
 def get_document_by_id(doc_id):
     """문서 조회"""
     return mongo.db.query_results.find_one({"_id": ObjectId(doc_id)})
 
+# 전체 문서
+def get_documents():
+    """문서 조회"""
+    return mongo.db.query_results.find()
+
 def get_latest_query_results(num=5):
-    """MongoDB에서 createdAt 기준으로 최신 5개 문서를 가져오는 함수"""
+    """MongoDB에서 published_at 기준으로 최신 5개 문서를 가져오는 함수"""
     docs = (mongo.db.query_results
             .find()
             .sort("published_at", -1)  # createdAt 기준 내림차순
             .limit(num))              # 5개만 조회
     return list(docs)
-
-def get_documents():
-    """문서 조회"""
-    return mongo.db.query_results.find()
 
 def tokenize_title(title: str):
     """
@@ -43,15 +50,15 @@ def tokenize_title(title: str):
 
 def etl():
     # 키워드 리스트 생성
-    injurys = fetch_injury_types_from_sheet()
+    injuries = fetch_injury_types_from_sheet() # injuries
     sports = fetch_sports_types_from_sheet()
 
-    injury_keywords = []
-    for i in injurys:
-        injury_keywords.append((i['부상종류']))
+    injuries_keywords = []
+    for i in injuries:
+        injuries_keywords.append((i['부상종류']))
 
     sports_keywords = []
-    for i in sports:
+    for i in sports:#
         sports_keywords.append((i['name']))
 
     # collection to dataframe
@@ -67,11 +74,11 @@ def etl():
     df = pd.DataFrame(docs)
 
     df['keyword_list'] = df['keyword'].astype(str).apply(lambda x: x.split('+'))
-    df['injuries'] = df['keyword_list'].apply(lambda words: [w for w in words if w in injury_keywords])
+    df['injuries'] = df['keyword_list'].apply(lambda words: [w for w in words if w in injuries_keywords])
     df['sports'] = df['keyword_list'].apply(lambda words: [w for w in words if w in sports_keywords])
     
     def extract_injuries_from_title(title_words):
-        return [w for w in title_words if w in injury_keywords]
+        return [w for w in title_words if w in injuries_keywords]
 
     def extract_sports_from_title(title_words):
         return [w for w in title_words if w in sports_keywords]

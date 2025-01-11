@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # 전역으로 mongo 인스턴스 생성(초기화는 아직 안 함)
-mongo = PyMongo()
+mongo = PyMongo() # db connection client
 
 def create_app():
     """Flask 애플리케이션을 생성해 반환하는 함수(팩토리 패턴)"""

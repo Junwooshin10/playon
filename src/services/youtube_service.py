@@ -22,7 +22,7 @@ def fetch_youtube_data(category, query="스포츠 부상", max_results=10):
     }
     response = requests.get(url, params=params)
     data = response.json()
-    print('result', data)
+    # print('result', data)
 
     video_list = []
     items = data.get("items", [])
