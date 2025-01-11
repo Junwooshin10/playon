@@ -90,3 +90,6 @@ Flask 애플리케이션을 생성하고 MongoDB와 연결하는 기능을 포�
 
 ### `templates/index.html`
 메인 대시보드 페이지의 HTML 템플릿입니다. 스포츠 카테고리, 새로운 부상 데이터, 부상 데이터 시각화를 포함합니다. Chart.js를 사용하여 부상 데이터를 시각화합니다.
+
+
+![view](img/view.jpg)
