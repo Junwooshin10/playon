@@ -51,13 +51,13 @@ def tokenize_title(title: str):
 
 def etl():
     # 키워드 리스트 생성
-    injurys = fetch_injury_types_from_sheet()
-    sports = fetch_sports_types_from_sheet()
-    body_parts = fetch_body_parts_from_sheet()
-    print(body_parts)
-    injury_keywords = [i['부상종류'] for i in injurys]
-    sports_keywords = [i['name'] for i in sports]
-    body_parts_keywords = body_parts
+    injurys = fetch_sheet_data_to_csv("부상종류")
+    sports = fetch_sheet_data_to_csv("운동종류")
+    body_parts = fetch_sheet_data_to_csv("부상부위")
+
+    injury_keywords = injurys['부상종류'].tolist()
+    sports_keywords = sports['name'].tolist()
+    body_parts_keywords = body_parts['부위'].tolist()
 
     # MongoDB 데이터를 가져와 DataFrame으로 변환
     collection = mongo.db.query_results

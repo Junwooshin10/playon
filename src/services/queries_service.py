@@ -23,9 +23,9 @@ def process_random_queries(category, queries, max_results):
 # 데이터 조합 및 YouTube 검색 실행
 def generate_and_search_queries():
     # 데이터 가져오기
-    injury_df = fetch_sheet_data('부상종류')  # '부상종류' 워크시트
-    sports_df = fetch_sheet_data('운동종류')  # '운동종류' 워크시트
-    body_parts_df = fetch_sheet_data('부상부위')  # '부상부위' 워크시트
+    injury_df = fetch_csv_data('부상종류')  # '부상종류' 워크시트
+    sports_df = fetch_csv_data('운동종류')  # '운동종류' 워크시트
+    body_parts_df = fetch_csv_data('부상부위')  # '부상부위' 워크시트
 
     sports_queries = {}
     # 검색 쿼리 생성

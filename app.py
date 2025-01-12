@@ -24,13 +24,17 @@ def main_dashboard():
     mongo.db.command("ping")
     print("MongoDB Atlas 연결 성공")
     # (1) 스포츠 카테고리
-    sports_categories = fetch_sports_types_from_sheet()
+    # 키워드 리스트 생성
+    sports = fetch_sheet_data_to_csv("운동종류")
+    print(sports)
+    sports_categories = sports.to_dict(orient="records")
 
     # (2) 새로운 데이터 알림 (예시로 YouTube 최신 영상 5개)
     new_injuries_data = get_latest_query_results(num=8)
     new_injuries = format_published_at(new_injuries_data)
     # (3) 구글 시트에서 부상종류/데이터를 가져와서 필요 시 가공
-    sheet_injury_data = fetch_injury_types_from_sheet()
+    injuries = fetch_sheet_data_to_csv("부상종류")
+    sheet_injury_data = injuries['부상종류'].tolist()
 
     df = etl()
 
