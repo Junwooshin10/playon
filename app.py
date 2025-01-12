@@ -26,12 +26,13 @@ def main_dashboard():
     # (1) 스포츠 카테고리
     # 키워드 리스트 생성
     sports = fetch_csv_data("운동종류")
-    print(sports)
     sports_categories = sports.to_dict(orient="records")
 
     # (2) 새로운 데이터 알림 (예시로 YouTube 최신 영상 5개)
     new_injuries_data = get_latest_query_results(num=8)
     new_injuries = format_published_at(new_injuries_data)
+
+
     # (3) 구글 시트에서 부상종류/데이터를 가져와서 필요 시 가공
     injuries = fetch_csv_data("부상종류")
     sheet_injury_data = injuries['부상종류'].tolist()
@@ -42,9 +43,17 @@ def main_dashboard():
     df_exploded_sports = df.explode('all_sports').dropna(subset=['all_sports'])
     df_exploded_body_parts = df.explode('all_body_parts').dropna(subset=['all_body_parts'])
     
-    injury_counts_series = df_exploded_inj['all_injuries'].value_counts()
-    injuryChartData = injury_counts_series.reset_index().to_dict(orient='records')
+    # 흔한 부상 리스트
+    df_exploded_inj_body =  pd.merge(
+            df_exploded_body_parts[['all_body_parts', '_id']],
+            df_exploded_inj[['all_injuries', '_id']],
+            on='_id'
+        )
+    body_injury_counts = df_exploded_inj_body.groupby(['all_body_parts', 'all_injuries']).size().reset_index(name='count')
+    top_body_injury_counts = body_injury_counts.sort_values(by='count', ascending=False).head(8)
+    injuryChartData = top_body_injury_counts.to_dict(orient='records')
 
+    # 운동별 부상 리스트 
     # 병합
     df_exploded = pd.merge(
         pd.merge(
@@ -57,7 +66,6 @@ def main_dashboard():
     )
 
     # 그룹화하여 빈도 계산
-    sport_injury_counts = df_exploded.groupby(['all_sports', 'all_injuries']).size().reset_index(name='count')
     sport_injury_body_counts = df_exploded.groupby(['all_sports', 'all_injuries', 'all_body_parts']).size().reset_index(name='count')
 
     # 빈도수 기준으로 정렬하여 상위 5개 선택

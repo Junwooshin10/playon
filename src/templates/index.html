@@ -75,7 +75,7 @@
   const injuryData = JSON.parse('{{ injuryChartData|tojson|default([])|safe }}') || [];
   const ctx = document.getElementById('injuryChart');
 
-  const labels = injuryData.map(item => item.all_injuries);
+  const labels = injuryData.map(item => item.all_body_parts + ' ' + item.all_injuries);
   const counts = injuryData.map(item => item.count);
 
   new Chart(ctx, {
