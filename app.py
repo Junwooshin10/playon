@@ -25,7 +25,7 @@ def main_dashboard():
     print("MongoDB Atlas 연결 성공")
     # (1) 스포츠 카테고리
     # 키워드 리스트 생성
-    sports = fetch_sheet_data_to_csv("운동종류")
+    sports = fetch_csv_data("운동종류")
     print(sports)
     sports_categories = sports.to_dict(orient="records")
 
@@ -33,7 +33,7 @@ def main_dashboard():
     new_injuries_data = get_latest_query_results(num=8)
     new_injuries = format_published_at(new_injuries_data)
     # (3) 구글 시트에서 부상종류/데이터를 가져와서 필요 시 가공
-    injuries = fetch_sheet_data_to_csv("부상종류")
+    injuries = fetch_csv_data("부상종류")
     sheet_injury_data = injuries['부상종류'].tolist()
 
     df = etl()

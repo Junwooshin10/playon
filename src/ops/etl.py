@@ -51,9 +51,9 @@ def tokenize_title(title: str):
 
 def etl():
     # 키워드 리스트 생성
-    injurys = fetch_sheet_data_to_csv("부상종류")
-    sports = fetch_sheet_data_to_csv("운동종류")
-    body_parts = fetch_sheet_data_to_csv("부상부위")
+    injurys = fetch_csv_data("부상종류")
+    sports = fetch_csv_data("운동종류")
+    body_parts = fetch_csv_data("부상부위")
 
     injury_keywords = injurys['부상종류'].tolist()
     sports_keywords = sports['name'].tolist()
