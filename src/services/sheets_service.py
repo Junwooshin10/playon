@@ -20,7 +20,6 @@ def fetch_sports_types_from_sheet():
     records = wks.get_all_records()
     return records
 
-
 def fetch_body_parts_from_sheet():
     """ '부상부위' 워크시트 데이터를 가져옵니다. """
     wks = gc.open(SHEET_NAME).worksheet('부상부위')
@@ -29,7 +28,10 @@ def fetch_body_parts_from_sheet():
 
 # 데이터 가져오기 함수
 def fetch_sheet_data(sheet_name):
+    address = 'docs/'
     """스프레드시트의 특정 워크시트 데이터를 가져옵니다."""
     wks = gc.open(SHEET_NAME).worksheet(sheet_name)
     records = wks.get_all_records()
-    return pd.DataFrame(records)
+    df = pd.DataFrame(records)
+    df.to_csv(path_or_buf=address+sheet_name+'_data.csv')
+    return df

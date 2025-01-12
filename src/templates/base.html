@@ -19,37 +19,45 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
 </head>
 <body>
-  <!-- 네비게이션 바 -->
-  <nav class="navbar bg-body-tertiary">
-    <div class="container-fluid">
-      <h1 class="logo text-left">
-        <a href="/" class="text-decoration-none text-reset">
-          <img class="shadow"
-           src="{{ url_for('static', filename='img/palyon-log-img.jpeg') }}" alt="Logo" 
-           style="border-radius: 10px; width: 45px; height: auto;">
-           PlayOn
-        </a>
-      </h1>
-      <!-- (2) 검색창 -->
-      <form action="{{ url_for('search_injuries') }}" method="get" class="d-flex" role="search" style="width:80%;">
-        <input type="search" name="q" class="form-control me-2" 
-                placeholder="부상 이름 / 스포츠 / 신체부위" aria-label="Search">
-        <button class="btn btn-outline-success" type="submit">Search</button>
-      </form>
+  <header>
+    <div class="px-3 py-2 bg-dark text-white">
+      <div class="container">
+        <div class="d-flex flex-wrap align-items-center">
+          <div class = "justify-content-center justify-content-lg-start">
+            <a href="/" class="text-decoration-none text-reset">
+              <img class="shadow"
+              src="{{ url_for('static', filename='img/palyon-log-img.jpeg') }}" alt="Logo" 
+              style="border-radius: 10px; width: 45px; height: auto;">
+              PlayOn
+            </a>
+          </div>
+          <div class = "justify-content-lg-end text-end" style="width:80%; margin-left: 50px;">
+            <form action="{{ url_for('search_injuries') }}" method="get" class="d-flex" role="search">
+              <input type="search" name="q" class="form-control me-2" 
+                      placeholder="부상 이름 / 스포츠 / 신체부위" aria-label="Search">
+              <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+          </div>
+        </div>
       </div>
-  </nav>
-  <nav class="navbar bg-body-tertiary px-3 mb-3">
-    <!-- (1) 카테고리 선택 -->
-    <div class="d-flex flex-wrap my-4">
-      {% for cat in sports_categories %}
-        <a title="{{cat['name']}}" href="{{ url_for('show_sport_category', sport_name=cat['name']) }}"
-           class="btn btn-outline-dark btn-lg mr-2 mb-2 text-wrap">
-          <i class="fas fa-solid {{ cat['icons'] }}"></i>
-           <span class="fw-bold d-inline-block align-text-top"> {{ cat['name'] }} </span>
-        </a>
-      {% endfor %}
     </div>
-  </nav>
+
+    <div class="px-3 py-2 border-bottom mb-3">
+      <div class="container d-flex flex-wrap justify-content-center">
+        <div class="d-flex flex-wrap my-4">
+          {% for cat in sports_categories %}
+          <div class="nb_item">
+            <a title="{{cat['name']}}" href="{{ url_for('show_sport_category', sport_name=cat['name']) }}"
+               class="btn btn-outline-dark btn-lg mr-2 mb-2 text-wrap">
+              <i class="fas fa-solid {{ cat['icons'] }}"></i>
+               <span class="fw-bold d-inline-block align-text-top"> {{ cat['name'] }} </span>
+            </a>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </header>
   <!-- 실제 컨텐츠 -->
   <div class="container my-4">
     {% block content %}{% endblock %}
@@ -61,3 +69,4 @@
   ></script>
 </body>
 </html>
+

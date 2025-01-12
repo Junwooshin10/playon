@@ -27,31 +27,42 @@ def main_dashboard():
     sports_categories = fetch_sports_types_from_sheet()
 
     # (2) 새로운 데이터 알림 (예시로 YouTube 최신 영상 5개)
-    new_injuries = get_latest_query_results(num=8)
-
-    
+    new_injuries_data = get_latest_query_results(num=8)
+    new_injuries = format_published_at(new_injuries_data)
     # (3) 구글 시트에서 부상종류/데이터를 가져와서 필요 시 가공
     sheet_injury_data = fetch_injury_types_from_sheet()
+
     df = etl()
+
     df_exploded_inj = df.explode('all_injuries').dropna(subset=['all_injuries'])
+    df_exploded_sports = df.explode('all_sports').dropna(subset=['all_sports'])
+    df_exploded_body_parts = df.explode('all_body_parts').dropna(subset=['all_body_parts'])
+    
     injury_counts_series = df_exploded_inj['all_injuries'].value_counts()
     injuryChartData = injury_counts_series.reset_index().to_dict(orient='records')
 
-    df_exploded_sports = df.explode('all_sports').dropna(subset=['all_sports'])
-    # 스포츠와 부상 데이터 병합
+    # 병합
     df_exploded = pd.merge(
-        df_exploded_sports[['all_sports', '_id']], 
-        df_exploded_inj[['all_injuries', '_id']],
+        pd.merge(
+            df_exploded_sports[['all_sports', '_id']],
+            df_exploded_inj[['all_injuries', '_id']],
+            on='_id'
+        ),
+        df_exploded_body_parts[['all_body_parts', '_id']],
         on='_id'
     )
+
     # 그룹화하여 빈도 계산
     sport_injury_counts = df_exploded.groupby(['all_sports', 'all_injuries']).size().reset_index(name='count')
+    sport_injury_body_counts = df_exploded.groupby(['all_sports', 'all_injuries', 'all_body_parts']).size().reset_index(name='count')
+
     # 빈도수 기준으로 정렬하여 상위 5개 선택
-    top_sport_injury_counts = sport_injury_counts.sort_values(by='count', ascending=False).head(8)
+    top_sport_injury_body_counts = sport_injury_body_counts.sort_values(by='count', ascending=False).head(8)
     # 원하는 형태로 데이터 변환
-    sportInjuryList = top_sport_injury_counts.rename(columns={
-        'all_sports': 'sport', 
-        'all_injuries': 'injury'
+    sportInjuryList = top_sport_injury_body_counts.rename(columns={
+    'all_sports': 'sport', 
+    'all_injuries': 'injury', 
+    'all_body_parts': 'body_part'
     }).to_dict(orient='records')
 
     return render_template(
@@ -103,8 +114,9 @@ def show_sport_category(sport_name):
     # print(records)
     # injuries = [r for r in records if r.get('스포츠') == sport_name]
 
-    injuries = get_document_by_sport(sport_name, 5)
-    print(injuries)
+    injuries_data = list(get_document_by_sport(sport_name, 5))
+    injuries = format_published_at(injuries_data)
+    
     return render_template(
         'category.html',
         sport_name=sport_name,

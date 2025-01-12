@@ -1,3 +1,7 @@
+{% extends "base.html" %}
+
+{% block content %}
+
 <!-- templates/category.html -->
 <!DOCTYPE html>
 <html lang="ko">
@@ -10,27 +14,41 @@
   >
 </head>
 <body>
-  <div class="container mt-4">
-    <h2>{{ sport_name }} 부상 사례 목록</h2>
-    {% if injuries %}
-      <ul>
-      {% for item in injuries %}
-        <li>
-          <a href="{{ item.video_url }} " target="_blank">
-            <img src="{{ item.thumbnail_url }}"
-            alt="{{ item.title }}"
-            style="width: 200px; height: auto; border-radius: 10px;"/>
-            <b>{{ item.title }}</b><br/>
-            {{ item.channel_title }}<br/>
-            <!-- ({{ item.published_at }}) -->
-          </a>
-        </li>
-      {% endfor %}
-      </ul>
-    {% else %}
-      <p>부상 사례가 없습니다.</p>
-    {% endif %}
-    <a href="{{ url_for('main_dashboard') }}" class="btn btn-primary">메인으로 돌아가기</a>
+  <div class="row">
+    <!-- 최신 영상 -->
+    <div class="col-md-12 mb-3">
+      <div class="card">
+        <div class="card-header bg-primary text-white col d-flex justify-content-center">
+          {{sport_name}} 부상 사례 목록
+        </div>
+        <div class="card-body">
+          {% if injuries %}
+          <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for item in injuries %}
+            <div class="col">
+              <div class="card h-100 border-dark">
+                <a class="text-decoration-none"  href="{{ item.video_url }}" target="_blank" title="{{ item.title }}">
+                  <img class="card-img-top" src="{{ item.thumbnail_url }}" alt="{{ item.title }}">
+                  <div class="card-body">
+                    <h5 class="card-title text-muted">{{ item.title }}</h5>
+                    <p class="card-text text-muted fw-bold">{{ item.channel_title }}</p>
+                    <p class="card-text">
+                      <small class="text-muted">{{ item.published_at }}</small>
+                    </p>
+                  </div>
+                </a>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p>최신 영상이 없습니다.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
   </div>
 </body>
 </html>
+
+{% endblock %}

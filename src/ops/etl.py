@@ -3,6 +3,7 @@ from src.ops.factory import mongo
 import pandas as pd
 import re
 from src.services.sheets_service import *
+import datetime
 
 def update_query_results(key:dict, update_data):
     """문서 업데이트""" 
@@ -50,43 +51,46 @@ def tokenize_title(title: str):
 
 def etl():
     # 키워드 리스트 생성
-    injuries = fetch_injury_types_from_sheet() # injuries
+    injurys = fetch_injury_types_from_sheet()
     sports = fetch_sports_types_from_sheet()
+    body_parts = fetch_body_parts_from_sheet()
+    print(body_parts)
+    injury_keywords = [i['부상종류'] for i in injurys]
+    sports_keywords = [i['name'] for i in sports]
+    body_parts_keywords = body_parts
 
-    injuries_keywords = []
-    for i in injuries:
-        injuries_keywords.append((i['부상종류']))
-
-    sports_keywords = []
-    for i in sports:#
-        sports_keywords.append((i['name']))
-
-    # collection to dataframe
+    # MongoDB 데이터를 가져와 DataFrame으로 변환
     collection = mongo.db.query_results
     result = collection.find()
-    docs = []
-    if result:
-        for doc in result:
-            docs.append(doc)
-    else:
+    docs = list(result)
+
+    if not docs:
         print("No documents found.")
+        return pd.DataFrame()
 
     df = pd.DataFrame(docs)
 
+    # 키워드 및 제목에서 데이터 추출
     df['keyword_list'] = df['keyword'].astype(str).apply(lambda x: x.split('+'))
-    df['injuries'] = df['keyword_list'].apply(lambda words: [w for w in words if w in injuries_keywords])
+    df['injuries'] = df['keyword_list'].apply(lambda words: [w for w in words if w in injury_keywords])
     df['sports'] = df['keyword_list'].apply(lambda words: [w for w in words if w in sports_keywords])
-    
+    df['body_parts'] = df['keyword_list'].apply(lambda words: [w for w in words if w in body_parts_keywords])
+
     def extract_injuries_from_title(title_words):
-        return [w for w in title_words if w in injuries_keywords]
+        return [w for w in title_words if w in injury_keywords]
 
     def extract_sports_from_title(title_words):
         return [w for w in title_words if w in sports_keywords]
 
+    def extract_body_parts_from_title(title_words):
+        return [w for w in title_words if w in body_parts_keywords]
+
     df['title_keywords'] = df['title'].astype(str).apply(tokenize_title)
     df['title_injuries'] = df['title_keywords'].apply(extract_injuries_from_title)
     df['title_sports'] = df['title_keywords'].apply(extract_sports_from_title)
+    df['title_body_parts'] = df['title_keywords'].apply(extract_body_parts_from_title)
 
+    # 병합된 데이터
     df['all_injuries'] = df.apply(
         lambda row: list(set(row['injuries'] + row['title_injuries'])),
         axis=1
@@ -95,6 +99,20 @@ def etl():
         lambda row: list(set(row['sports'] + row['title_sports'])),
         axis=1
     )
+    df['all_body_parts'] = df.apply(
+        lambda row: list(set(row['body_parts'] + row['title_body_parts'])),
+        axis=1
+    )
     return df
 
-
+# published_at 포맷팅 함수
+def format_published_at(data):
+    for item in data:
+        try:
+            # 기존 published_at 값을 파싱
+            original_date = datetime.datetime.strptime(item['published_at'], "%Y-%m-%dT%H:%M:%SZ")
+            # 새로운 포맷으로 변환 (예: 'YYYY-MM-DD HH:MM:SS')
+            item['published_at'] = original_date.strftime("%Y-%m-%d %H:%M:%S")
+        except ValueError as e:
+            print(f"Error parsing date for {item['_id']}: {e}")
+    return data
