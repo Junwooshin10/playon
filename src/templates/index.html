@@ -2,21 +2,25 @@
 
 {% block content %}
 
-<div class="row">
+<div class="row  align-items-start">
   <!-- 왼쪽: 부상 빈도수 차트 -->
-  <div class="col-md-6 mb-3">
+  <div class="col">
     <div class="card">
       <div class="card-header bg-primary text-white">
-        가장 흔한 부상 TOP5
+        부상 빈도
       </div>
-      <div class="card-body">
-        <canvas id="injuryChart" height="200"></canvas>
+      <div class="card-body row">
+        <div class="col-6">
+          <canvas id="injuryChart" height="200"></canvas>
+        </div>
+        <div class="col-4">
+          <canvas id="injuryPieChart" height="200"></canvas>
+        </div>
       </div>
     </div>
   </div>
-
   <!-- 오른쪽: 스포츠-부상 상위 빈도 리스트 -->
-  <div class="col-md-6 mb-3">
+  <div class="">
     <div class="card">
       <div class="card-header bg-primary text-white">
         스포츠별 부상 통계
@@ -94,6 +98,26 @@
       }
     }
   });
+// Flask에서 전달한 데이터를 JavaScript로 파싱
+const pieChartData = JSON.parse('{{ pie_chart_data|tojson }}') || [];
+// Chart.js로 파이 차트 생성
+const ctx_pie = document.getElementById('injuryPieChart').getContext('2d');
+new Chart(ctx_pie, {
+    type: 'pie',
+    data: pieChartData,
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+            title: {
+                display: true,
+                text: '흔한 부상 리스트'
+            }
+        }
+    }
+});
 </script>
 
 {% endblock %}

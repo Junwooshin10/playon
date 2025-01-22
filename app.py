@@ -52,6 +52,8 @@ def main_dashboard():
     body_injury_counts = df_exploded_inj_body.groupby(['all_body_parts', 'all_injuries']).size().reset_index(name='count')
     top_body_injury_counts = body_injury_counts.sort_values(by='count', ascending=False).head(8)
     injuryChartData = top_body_injury_counts.to_dict(orient='records')
+    df_exploded_inj_body['body_part_injury'] = df_exploded_inj_body['all_body_parts'] + ' ' + df_exploded_inj_body['all_injuries']
+    pie_chart_data = prepare_pie_chart_data(df_exploded_inj_body)
 
     # 운동별 부상 리스트 
     # 병합
@@ -83,7 +85,8 @@ def main_dashboard():
         sportInjuryList=sportInjuryList,
         sports_categories=sports_categories,
         new_injuries=new_injuries,
-        sheet_injury_data=sheet_injury_data
+        sheet_injury_data=sheet_injury_data,
+        pie_chart_data=pie_chart_data
     )
 
 @app.route('/save', methods=['POST']) 

@@ -116,3 +116,39 @@ def format_published_at(data):
         except ValueError as e:
             print(f"Error parsing date for {item['_id']}: {e}")
     return data
+
+import pandas as pd
+
+def prepare_pie_chart_data(df_exploded_inj_body):
+    """
+    주어진 데이터프레임에서 부상과 빈도수를 계산하고,
+    빈도수가 전체의 20% 미만인 것을 기타로 묶어서 반환.
+    """
+    # 부상 종류별로 빈도 계산
+    body_injury_counts = df_exploded_inj_body.groupby(['body_part_injury']).size().reset_index(name='count')
+    
+    # 전체 빈도 합계
+    total_count = body_injury_counts['count'].sum()
+
+    # 전체 대비 비율 계산
+    body_injury_counts['percentage'] = body_injury_counts['count'] / total_count * 100
+
+    # 기타로 그룹화 (20% 미만인 항목)
+    grouped = body_injury_counts.copy()
+    grouped.loc[grouped['percentage'] < 5, 'body_part_injury'] = '기타'
+    
+    # 기타 포함하여 그룹 재집계
+    grouped = grouped.groupby('body_part_injury', as_index=False).agg({
+        'count': 'sum',
+        'percentage': 'sum'
+    }).sort_values(by='count', ascending=False)
+
+    # Chart.js용 데이터 포맷
+    pie_chart_data = {
+        'labels': grouped['body_part_injury'].tolist(),
+        'datasets': [{
+            'data': grouped['count'].tolist(),
+            'backgroundColor': ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF']
+        }]
+    }
+    return pie_chart_data
