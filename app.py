@@ -14,28 +14,28 @@ app = create_app()
 default_queries = generate_and_search_queries()
 
 #-----------------------------------
-# 3) Flask 라우트
+# 3) Flask Routes
 #-----------------------------------
 @app.route('/')
 def main_dashboard():
     """
-    메인 대시보드
+    Main Dashboard
     """
     mongo.db.command("ping")
-    print("MongoDB Atlas 연결 성공")
-    # (1) 스포츠 카테고리
-    # 키워드 리스트 생성
-    sports = fetch_csv_data("운동종류")
+    print("MongoDB Atlas connection successful")
+    
+    # (1) Sports categories
+    # Generate keyword list
+    sports = fetch_csv_data("Sports Type")
     sports_categories = sports.to_dict(orient="records")
 
-    # (2) 새로운 데이터 알림 (예시로 YouTube 최신 영상 5개)
+    # (2) New data notifications (Example: Latest 8 YouTube videos)
     new_injuries_data = get_latest_query_results(num=8)
     new_injuries = format_published_at(new_injuries_data)
 
-
-    # (3) 구글 시트에서 부상종류/데이터를 가져와서 필요 시 가공
-    injuries = fetch_csv_data("부상종류")
-    sheet_injury_data = injuries['부상종류'].tolist()
+    # (3) Retrieve injury data from Google Sheets and process if needed
+    injuries = fetch_csv_data("Injury Type")
+    sheet_injury_data = injuries['Injury Type'].tolist()
 
     df = etl()
 
@@ -43,8 +43,8 @@ def main_dashboard():
     df_exploded_sports = df.explode('all_sports').dropna(subset=['all_sports'])
     df_exploded_body_parts = df.explode('all_body_parts').dropna(subset=['all_body_parts'])
     
-    # 흔한 부상 리스트
-    df_exploded_inj_body =  pd.merge(
+    # Common injury list
+    df_exploded_inj_body = pd.merge(
             df_exploded_body_parts[['all_body_parts', '_id']],
             df_exploded_inj[['all_injuries', '_id']],
             on='_id'
@@ -55,8 +55,8 @@ def main_dashboard():
     df_exploded_inj_body['body_part_injury'] = df_exploded_inj_body['all_body_parts'] + ' ' + df_exploded_inj_body['all_injuries']
     pie_chart_data = prepare_pie_chart_data(df_exploded_inj_body)
 
-    # 운동별 부상 리스트 
-    # 병합
+    # Injury list by sport 
+    # Merge data
     df_exploded = pd.merge(
         pd.merge(
             df_exploded_sports[['all_sports', '_id']],
@@ -67,16 +67,17 @@ def main_dashboard():
         on='_id'
     )
 
-    # 그룹화하여 빈도 계산
+    # Group and calculate frequencies
     sport_injury_body_counts = df_exploded.groupby(['all_sports', 'all_injuries', 'all_body_parts']).size().reset_index(name='count')
 
-    # 빈도수 기준으로 정렬하여 상위 5개 선택
+    # Sort by frequency and select top 8
     top_sport_injury_body_counts = sport_injury_body_counts.sort_values(by='count', ascending=False).head(8)
-    # 원하는 형태로 데이터 변환
+    
+    # Convert data to desired format
     sportInjuryList = top_sport_injury_body_counts.rename(columns={
-    'all_sports': 'sport', 
-    'all_injuries': 'injury', 
-    'all_body_parts': 'body_part'
+        'all_sports': 'sport', 
+        'all_injuries': 'injury', 
+        'all_body_parts': 'body_part'
     }).to_dict(orient='records')
 
     return render_template(
@@ -91,44 +92,41 @@ def main_dashboard():
 
 @app.route('/save', methods=['POST']) 
 def save_queries():
-    # 각 스포츠별 데이터 처리 및 저장
+    # Process and store data for each sport
     for sport, queries in default_queries.items():
-        process_random_queries(sport, queries, max_results=5)  # 저장 로직 호출
+        process_random_queries(sport, queries, max_results=5)  # Call save logic
     return "Data saved successfully"
 
 @app.route('/search', methods=['GET'])
 def search_injuries():
     """
-    검색 처리:
-    - ?q=발목 형태로 검색어 받음
-    - 부상 이름, 스포츠 종류, 신체 부위 등에 대해 필터링
-    - 결과 페이지 렌더링
+    Search processing:
+    - Receive query via ?q=ankle
+    - Filter results by injury name, sport type, or body part
+    - Render the results page
     """
     query = request.args.get('q', '').strip()
 
     if not query:
         return render_template('search_result.html', query="", results=[])
-    # 예: 부상종류 시트에서 가져와서 간단 검색
-    # 실제로는 DB에서 LIKE/REGEX 로 검색 가능
-    records = fetch_injury_types_from_sheet()
+
+    # Example: Simple search from injury type sheet
+    # Actual implementation may use DB LIKE/REGEX search
+    records = fetch_csv_data('Injury Type')
     filtered = [
         r for r in records 
-        if (query.lower() in r.get('부상명', '').lower()
-            or query.lower() in r.get('스포츠', '').lower())
+        if (query.lower() in r.get('Injury Type', '').lower()
+            or query.lower() in r.get('Sport', '').lower())
     ]
 
     return render_template('search_result.html', query=query, results=filtered)
 
-
 @app.route('/category/<sport_name>')
 def show_sport_category(sport_name):
-    # 1) 스포츠에 해당하는 쿼리 리스트를 생성
-    # 2) 쿼리 리스트를 가지고 youtube에 검색
-    # 3) 검색 결과를 보여주기
-    # records = fetch_injury_types_from_sheet()
-    # print(records)
-    # injuries = [r for r in records if r.get('스포츠') == sport_name]
-
+    # 1) Generate query list for the sport
+    # 2) Search YouTube with the query list
+    # 3) Display search results
+    
     injuries_data = list(get_document_by_sport(sport_name, 5))
     injuries = format_published_at(injuries_data)
     
@@ -138,7 +136,6 @@ def show_sport_category(sport_name):
         injuries=injuries
     )
 
-
-# Flask 실행
+# Run Flask app
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)

@@ -1,16 +1,16 @@
 import os
 import requests
 
-API_KEY =  os.environ.get('YOUTUBE_API_KEY')  # 실제로는 os.environ.get('YOUTUBE_API_KEY') 등
+API_KEY = os.environ.get('YOUTUBE_API_KEY')  # Typically set as an environment variable
 url = 'https://www.googleapis.com/youtube/v3/search'
 
 #-----------------------------------
-# YouTube API로 데이터 가져오기 
+# Fetch data using YouTube API
 #-----------------------------------
-def fetch_youtube_data(category, query="스포츠 부상", max_results=10):
+def fetch_youtube_data(category, query="sports injury", max_results=10):
     """
-    YouTube Data API를 통해 'query' 검색 결과를 가져옵니다.
-    반환: 동영상 정보 리스트 (title, videoId, channelTitle 등)
+    Fetches search results for the given 'query' using the YouTube Data API.
+    Returns: A list of video information (title, videoId, channelTitle, etc.)
     """
     params = {
         'part': 'snippet',

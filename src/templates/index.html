@@ -2,12 +2,12 @@
 
 {% block content %}
 
-<div class="row  align-items-start">
-  <!-- 왼쪽: 부상 빈도수 차트 -->
+<div class="row align-items-start">
+  <!-- Left: Injury Frequency Chart -->
   <div class="col">
     <div class="card">
       <div class="card-header bg-primary text-white">
-        부상 빈도
+        Injury Frequency
       </div>
       <div class="card-body row">
         <div class="col-6">
@@ -19,11 +19,11 @@
       </div>
     </div>
   </div>
-  <!-- 오른쪽: 스포츠-부상 상위 빈도 리스트 -->
+  <!-- Right: Top Sport-Injury Frequency List -->
   <div class="">
     <div class="card">
       <div class="card-header bg-primary text-white">
-        스포츠별 부상 통계
+        Injury Statistics by Sport
       </div>
       <div class="card-body">
         <ul class="list-group">
@@ -40,11 +40,11 @@
 </div>
 
 <div class="row">
-  <!-- 최신 영상 -->
+  <!-- Latest Videos -->
   <div class="col-md-12 mb-3">
     <div class="card">
       <div class="card-header bg-primary text-white">
-        최신 영상
+        Latest Videos
       </div>
       <div class="card-body">
         {% if new_injuries %}
@@ -52,7 +52,7 @@
           {% for item in new_injuries %}
           <div class="col">
             <div class="card h-100 border-dark">
-              <a class="text-decoration-none"  href="{{ item.video_url }}" target="_blank" title="{{ item.title }}">
+              <a class="text-decoration-none" href="{{ item.video_url }}" target="_blank" title="{{ item.title }}">
                 <img class="card-img-top" src="{{ item.thumbnail_url }}" alt="{{ item.title }}">
                 <div class="card-body">
                   <h5 class="card-title text-muted">{{ item.title }}</h5>
@@ -67,14 +67,14 @@
           {% endfor %}
         </div>
         {% else %}
-        <p>최신 영상이 없습니다.</p>
+        <p>No latest videos available.</p>
         {% endif %}
       </div>
     </div>
   </div>
 </div>
 
-<!-- 차트 데이터 -->
+<!-- Chart Data -->
 <script>
   const injuryData = JSON.parse('{{ injuryChartData|tojson|default([])|safe }}') || [];
   const ctx = document.getElementById('injuryChart');
@@ -87,7 +87,7 @@
     data: {
       labels: labels,
       datasets: [{
-        label: '부상 발생 빈도',
+        label: 'Injury Occurrence Frequency',
         data: counts,
         backgroundColor: 'rgba(255, 99, 132, 0.6)',
       }]
@@ -98,9 +98,9 @@
       }
     }
   });
-// Flask에서 전달한 데이터를 JavaScript로 파싱
+// Parsing data passed from Flask to JavaScript
 const pieChartData = JSON.parse('{{ pie_chart_data|tojson }}') || [];
-// Chart.js로 파이 차트 생성
+// Generate a pie chart with Chart.js
 const ctx_pie = document.getElementById('injuryPieChart').getContext('2d');
 new Chart(ctx_pie, {
     type: 'pie',
@@ -113,7 +113,7 @@ new Chart(ctx_pie, {
             },
             title: {
                 display: true,
-                text: '흔한 부상 리스트'
+                text: 'Common Injury List'
             }
         }
     }

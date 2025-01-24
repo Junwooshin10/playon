@@ -1,0 +1,13 @@
+,Injury Type,Description,Details
+0,Strain,Sprain,"A partial stretch or tear of ligaments or muscles around a joint, causing pain and swelling, making joint movement difficult."
+1,Fracture,,A condition where a bone is completely broken or cracked (including cases discovered later).
+2,Dislocation,Displacement,"An injury where bones, cartilage, or ligaments forming a joint are displaced from their normal position, commonly referred to as a dislocated bone."
+3,Laceration,Tear,An injury where the skin is torn.
+4,Amputation,,"An injury where a part of the body is severed, including fingernails, toenails, and hair."
+5,Abrasion,Scrape,A wound on the surface of the skin caused by friction.
+6,Bleeding,,An injury where blood flows out of the body due to some impact.
+7,Contusion,Bruise,"An injury where internal muscles or organs are impacted, accompanied by symptoms such as bruising, pain, and swelling."
+8,Puncture,Stab+Cut,A wound caused by being pierced or cut by an external sharp object.
+9,Pain,,"An unpleasant and painful sensation caused by physical impact or repetitive muscle use."
+10,Inflammation,Suppuration,A bodily reaction that occurs when tissues are damaged, leading to swelling or pus formation.
+11,Rupture,Burst,A condition where ligaments or muscles tear due to external force or excessive movement.

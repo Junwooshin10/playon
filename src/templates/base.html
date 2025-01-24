@@ -1,17 +1,16 @@
 <!-- templates/base.html -->
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>부상 방지 가이드</title>
-  <!-- 부트스트랩 CSS -->
+  <title>Injury Prevention Guide</title>
+  <!-- Bootstrap CSS -->
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
   >
   <!-- Fontawesome -->
-  <script src="https://kit.fontawesome.com/3d743e9be9.js" crossorigin="anonymous"
-  ></script>
+  <script src="https://kit.fontawesome.com/3d743e9be9.js" crossorigin="anonymous"></script>
   <!-- Chart.js -->
   <script
     src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"
@@ -23,7 +22,7 @@
     <div class="px-3 py-2 bg-dark text-white">
       <div class="container">
         <div class="d-flex flex-wrap align-items-center">
-          <div class = "justify-content-center justify-content-lg-start">
+          <div class="justify-content-center justify-content-lg-start">
             <a href="/" class="text-decoration-none text-reset">
               <img class="shadow"
               src="{{ url_for('static', filename='img/palyon-log-img.jpeg') }}" alt="Logo" 
@@ -31,10 +30,10 @@
               PlayOn
             </a>
           </div>
-          <div class = "justify-content-lg-end text-end" style="width:80%; margin-left: 50px;">
+          <div class="justify-content-lg-end text-end" style="width:80%; margin-left: 50px;">
             <form action="{{ url_for('search_injuries') }}" method="get" class="d-flex" role="search">
               <input type="search" name="q" class="form-control me-2" 
-                      placeholder="부상 이름 / 스포츠 / 신체부위" aria-label="Search">
+                      placeholder="Injury Name / Sport / Body Part" aria-label="Search">
               <button class="btn btn-outline-success" type="submit">Search</button>
             </form>
           </div>
@@ -58,15 +57,14 @@
       </div>
     </div>
   </header>
-  <!-- 실제 컨텐츠 -->
+  <!-- Main Content -->
   <div class="container my-4">
     {% block content %}{% endblock %}
   </div>
 
-  <!-- 부트스트랩 JS (Popper 포함) -->
+  <!-- Bootstrap JS (including Popper) -->
   <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
   ></script>
 </body>
 </html>
-

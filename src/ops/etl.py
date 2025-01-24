@@ -5,61 +5,61 @@ import re
 from src.services.sheets_service import *
 import datetime
 
-def update_query_results(key:dict, update_data):
-    """문서 업데이트""" 
-    result = mongo.db.query_results.update_one( 
-       key,
+def update_query_results(key: dict, update_data):
+    """Update document""" 
+    result = mongo.db.query_results.update_one(
+        key,
         {"$set": update_data},
-        upsert=True  # 없으면 삽입 update + insert
+        upsert=True  # Insert if not exists (update + insert)
     )
     return result.modified_count
 
-# 카테고리(sports) 기준으로 문서 조회
+# Retrieve documents by category (sports)
 def get_document_by_sport(sport, num=8):
-    """문서 조회"""
+    """Retrieve documents by category"""
     return mongo.db.query_results.find({"category": sport}).limit(num)
 
-# Id 기준으로 문서 조회
+# Retrieve document by ID
 def get_document_by_id(doc_id):
-    """문서 조회"""
+    """Retrieve document by ID"""
     return mongo.db.query_results.find_one({"_id": ObjectId(doc_id)})
 
-# 전체 문서
+# Retrieve all documents
 def get_documents():
-    """문서 조회"""
+    """Retrieve all documents"""
     return mongo.db.query_results.find()
 
 def get_latest_query_results(num=5):
-    """MongoDB에서 published_at 기준으로 최신 5개 문서를 가져오는 함수"""
+    """Fetch the latest 5 documents from MongoDB based on published_at"""
     docs = (mongo.db.query_results
             .find()
-            .sort("published_at", -1)  # createdAt 기준 내림차순
-            .limit(num))              # 5개만 조회
+            .sort("published_at", -1)  # Sort by published_at descending
+            .limit(num))               # Limit to 5 documents
     return list(docs)
 
 def tokenize_title(title: str):
     """
-    title 문자열을 간단히 전처리한 뒤,
-    띄어쓰기 단위로 쪼개서 리스트로 반환
+    Preprocess the title string,
+    split by spaces and return as a list
     """
-    # 1) 모두 소문자로
+    # 1) Convert to lowercase
     title = title.lower()
-    # 2) 알파벳/한글/숫자/기타문자만 남기고 제거 (예: 정규식)
+    # 2) Keep only alphabets/numbers/Korean characters/spaces using regex
     title = re.sub(r'[^0-9a-zA-Z가-힣\s+]', '', title)
-    # 3) 띄어쓰기로 split
+    # 3) Split by spaces
     return title.split()
 
 def etl():
-    # 키워드 리스트 생성
-    injurys = fetch_csv_data("부상종류")
-    sports = fetch_csv_data("운동종류")
-    body_parts = fetch_csv_data("부상부위")
+    # Create keyword lists
+    injurys = fetch_csv_data("Injury Type")
+    sports = fetch_csv_data("Sports Type")
+    body_parts = fetch_csv_data("Body Part")
 
-    injury_keywords = injurys['부상종류'].tolist()
+    injury_keywords = injurys['Injury Type'].tolist()
     sports_keywords = sports['name'].tolist()
-    body_parts_keywords = body_parts['부위'].tolist()
+    body_parts_keywords = body_parts['Body Part'].tolist()
 
-    # MongoDB 데이터를 가져와 DataFrame으로 변환
+    # Retrieve MongoDB data and convert to DataFrame
     collection = mongo.db.query_results
     result = collection.find()
     docs = list(result)
@@ -70,7 +70,7 @@ def etl():
 
     df = pd.DataFrame(docs)
 
-    # 키워드 및 제목에서 데이터 추출
+    # Extract data from keywords and titles
     df['keyword_list'] = df['keyword'].astype(str).apply(lambda x: x.split('+'))
     df['injuries'] = df['keyword_list'].apply(lambda words: [w for w in words if w in injury_keywords])
     df['sports'] = df['keyword_list'].apply(lambda words: [w for w in words if w in sports_keywords])
@@ -90,7 +90,7 @@ def etl():
     df['title_sports'] = df['title_keywords'].apply(extract_sports_from_title)
     df['title_body_parts'] = df['title_keywords'].apply(extract_body_parts_from_title)
 
-    # 병합된 데이터
+    # Merge extracted data
     df['all_injuries'] = df.apply(
         lambda row: list(set(row['injuries'] + row['title_injuries'])),
         axis=1
@@ -105,45 +105,43 @@ def etl():
     )
     return df
 
-# published_at 포맷팅 함수
+# Format published_at date function
 def format_published_at(data):
     for item in data:
         try:
-            # 기존 published_at 값을 파싱
+            # Parse the original published_at value
             original_date = datetime.datetime.strptime(item['published_at'], "%Y-%m-%dT%H:%M:%SZ")
-            # 새로운 포맷으로 변환 (예: 'YYYY-MM-DD HH:MM:SS')
+            # Convert to new format (e.g., 'YYYY-MM-DD HH:MM:SS')
             item['published_at'] = original_date.strftime("%Y-%m-%d %H:%M:%S")
         except ValueError as e:
             print(f"Error parsing date for {item['_id']}: {e}")
     return data
 
-import pandas as pd
-
 def prepare_pie_chart_data(df_exploded_inj_body):
     """
-    주어진 데이터프레임에서 부상과 빈도수를 계산하고,
-    빈도수가 전체의 20% 미만인 것을 기타로 묶어서 반환.
+    Calculate injury types and their frequency from the given DataFrame,
+    and group those with less than 20% frequency as 'Others'.
     """
-    # 부상 종류별로 빈도 계산
+    # Count frequency by injury type
     body_injury_counts = df_exploded_inj_body.groupby(['body_part_injury']).size().reset_index(name='count')
     
-    # 전체 빈도 합계
+    # Calculate total count
     total_count = body_injury_counts['count'].sum()
 
-    # 전체 대비 비율 계산
+    # Calculate percentage
     body_injury_counts['percentage'] = body_injury_counts['count'] / total_count * 100
 
-    # 기타로 그룹화 (20% 미만인 항목)
+    # Group as 'Others' if frequency is less than 5%
     grouped = body_injury_counts.copy()
-    grouped.loc[grouped['percentage'] < 5, 'body_part_injury'] = '기타'
+    grouped.loc[grouped['percentage'] < 5, 'body_part_injury'] = 'Others'
     
-    # 기타 포함하여 그룹 재집계
+    # Aggregate including 'Others'
     grouped = grouped.groupby('body_part_injury', as_index=False).agg({
         'count': 'sum',
         'percentage': 'sum'
     }).sort_values(by='count', ascending=False)
 
-    # Chart.js용 데이터 포맷
+    # Format data for Chart.js
     pie_chart_data = {
         'labels': grouped['body_part_injury'].tolist(),
         'datasets': [{

@@ -4,10 +4,10 @@
 
 <!-- templates/category.html -->
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>{{ sport_name }} 부상 사례</title>
+  <title>{{ sport_name }} Injury Cases</title>
   <link 
     rel="stylesheet" 
     href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
@@ -15,11 +15,11 @@
 </head>
 <body>
   <div class="row">
-    <!-- 최신 영상 -->
+    <!-- Latest Videos -->
     <div class="col-md-12 mb-3">
       <div class="card">
         <div class="card-header bg-primary text-white col d-flex justify-content-center">
-          {{sport_name}} 부상 사례 목록
+          {{ sport_name }} Injury Case List
         </div>
         <div class="card-body">
           {% if injuries %}
@@ -27,7 +27,7 @@
             {% for item in injuries %}
             <div class="col">
               <div class="card h-100 border-dark">
-                <a class="text-decoration-none"  href="{{ item.video_url }}" target="_blank" title="{{ item.title }}">
+                <a class="text-decoration-none" href="{{ item.video_url }}" target="_blank" title="{{ item.title }}">
                   <img class="card-img-top" src="{{ item.thumbnail_url }}" alt="{{ item.title }}">
                   <div class="card-body">
                     <h5 class="card-title text-muted">{{ item.title }}</h5>
@@ -42,7 +42,7 @@
             {% endfor %}
           </div>
           {% else %}
-          <p>최신 영상이 없습니다.</p>
+          <p>No latest videos available.</p>
           {% endif %}
         </div>
       </div>
